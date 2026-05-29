@@ -1,0 +1,6 @@
+{
+  "name": "PromptTo3DModelMaker",
+  "tree": {
+    "$path": "src/PromptTo3DModelMaker.server.lua"
+  }
+}

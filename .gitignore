@@ -1,0 +1,11 @@
+# Rojo build output
+*.rbxm
+*.rbxmx
+*.rbxl
+*.rbxlx
+
+# Editor / OS
+.DS_Store
+*.swp
+.vscode/
+.idea/
