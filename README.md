@@ -2,9 +2,12 @@
 
 A **free, offline Roblox Studio plugin** that turns a text prompt into a 3D
 model, right inside your place. Type something like `big red car`,
-`wooden house`, or `glowing blue castle`, click **Generate**, and the plugin
+`green dragon`, or `glowing blue castle`, click **Generate**, and the plugin
 builds a matching model out of Parts, drops it in front of your camera, selects
 it, and adds it to the undo history.
+
+It ships with a library of **140+ objects** across nature, animals, buildings,
+vehicles, furniture, food, weapons, fantasy/sci-fi and toys.
 
 No API keys. No internet connection. No cost. Everything runs locally in Studio,
 so it's safe to use in any game project.
@@ -91,16 +94,45 @@ object is optional, and order is flexible.
 | `tiny wooden sword` | A small, wood-textured sword |
 | `gold coin` | A standing gold coin |
 
-### Supported objects
+### Supported objects (140+)
 
-`house` · `tree` · `car` · `sword` · `chair` · `table` · `castle` · `rocket` ·
-`robot` · `snowman` · `flower` · `mushroom` · `crate` · `lamp` · `boat` ·
-`campfire` · `coin` · `pyramid` · `fence`
+**Buildings & scenery:** house · castle · tower · skyscraper · barn · windmill ·
+lighthouse · temple · gazebo · fountain · well · bridge · wall · fence · tent ·
+igloo · birdhouse · mailbox · staircase · ladder · sign · pyramid
+
+**Nature:** tree · palm · cactus · flower · sunflower · mushroom · pumpkin ·
+bush · rock · log · pond · cloud · coral · iceberg · volcano · island
+
+**Animals:** dog · cat · fish · bird · duck · penguin · bee · butterfly · frog ·
+pig · cow · sheep · chicken · rabbit · turtle · dragon · shark · whale · spider ·
+snake
+
+**Vehicles:** car · bus · train · airplane · helicopter · tank · submarine ·
+boat · rocket · ufo · bicycle · motorcycle · wagon · sled · balloon
+
+**Furniture & household:** chair · table · bench · bed · sofa · bookshelf ·
+wardrobe · fridge · stove · bathtub · tv · computer · clock · lamp · vase ·
+candle · crate · swing · slide · trampoline
+
+**Food:** cake · cupcake · cookie · donut · icecream · pizza · burger · hotdog ·
+apple · banana · mug · bottle
+
+**Weapons & tools:** sword · axe · hammer · spear · bow · shield · cannon ·
+bomb · torch · anvil · bucket · key
+
+**Fantasy & sci-fi:** crown · wand · potion · gem · treasurechest · tombstone ·
+skull · ghost · star · satellite · alien · robot
+
+**Toys, sports & misc:** snowman · teddybear · soccerball · dice · kite ·
+guitar · drum · trophy · coin · present · heart · moon · trafficcone ·
+firehydrant · dumpster · campfire
 
 Many synonyms work too (`cabin`→house, `katana`→sword, `spaceship`→rocket,
-`tower`→castle, `box`→crate, `lantern`→lamp, `sailboat`→boat, …). If no object
-is recognised, the plugin builds a placeholder crystal and tells you in the
-status line.
+`bunny`→rabbit, `plane`→airplane, `couch`→sofa, `diamond`→gem, `chest`→treasure
+chest, …). Multi-word prompts use the **last** recognised object word, so
+`fire hydrant` builds a hydrant (not a fire) and `ice cream` builds ice cream.
+If no object is recognised, the plugin builds a placeholder crystal and tells
+you in the status line.
 
 ### Modifiers
 
