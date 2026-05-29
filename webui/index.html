@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>promptmesh — Prompt → 3D for Roblox</title>
+<style>
+  :root { --bg:#1d1f24; --panel:#262a31; --field:#1a1d22; --line:#363b44;
+          --text:#e8eaed; --muted:#9aa0aa; --accent:#5a82f0; --accent2:#3fae6b; }
+  * { box-sizing:border-box; }
+  body { margin:0; font:14px/1.5 -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+         color:var(--text); background:var(--bg); display:flex; height:100vh; overflow:hidden; }
+  #sidebar { width:330px; min-width:330px; background:var(--panel); border-right:1px solid var(--line);
+             padding:16px; overflow-y:auto; }
+  #stage { flex:1; position:relative; }
+  #canvas-wrap { position:absolute; inset:0; }
+  h1 { font-size:16px; margin:0 0 2px; }
+  .sub { color:var(--muted); font-size:12px; margin:0 0 14px; }
+  label { display:block; font-size:12px; color:var(--muted); margin:12px 0 4px; }
+  textarea, input[type=text], input[type=password], select {
+    width:100%; background:var(--field); border:1px solid var(--line); color:var(--text);
+    border-radius:7px; padding:8px 10px; font:inherit; }
+  textarea { resize:vertical; min-height:54px; }
+  .row { display:flex; gap:8px; }
+  .row > * { flex:1; }
+  .seg { display:flex; background:var(--field); border:1px solid var(--line); border-radius:7px; padding:3px; margin-top:4px; }
+  .seg button { flex:1; background:none; border:0; color:var(--muted); padding:7px; border-radius:5px; cursor:pointer; font:inherit; }
+  .seg button.on { background:var(--accent); color:#fff; }
+  button.go { width:100%; margin-top:16px; background:var(--accent); color:#fff; border:0;
+              border-radius:8px; padding:11px; font-size:15px; font-weight:600; cursor:pointer; }
+  button.go:disabled { opacity:.55; cursor:default; }
+  .hint { font-size:11px; color:var(--muted); margin-top:6px; }
+  #status { margin-top:14px; font-size:13px; min-height:18px; }
+  #bar { height:6px; background:var(--field); border-radius:4px; margin-top:8px; overflow:hidden; display:none; }
+  #bar > div { height:100%; width:0; background:var(--accent2); transition:width .3s; }
+  .downloads { margin-top:14px; display:none; }
+  .downloads a { display:inline-block; margin:4px 6px 0 0; padding:7px 11px; background:var(--field);
+                 border:1px solid var(--line); border-radius:7px; color:var(--text); text-decoration:none; font-size:12px; }
+  .downloads a:hover { border-color:var(--accent); }
+  details { margin-top:16px; border-top:1px solid var(--line); padding-top:10px; }
+  summary { cursor:pointer; color:var(--muted); font-size:12px; }
+  details p, details li { font-size:12px; color:var(--muted); }
+  .badge { position:absolute; top:12px; left:12px; background:rgba(0,0,0,.45); padding:6px 10px;
+           border-radius:6px; font-size:12px; color:var(--muted); pointer-events:none; }
+  .hide { display:none !important; }
+  code { background:var(--field); padding:1px 5px; border-radius:4px; }
+</style>
+</head>
+<body>
+<div id="sidebar">
+  <h1>promptmesh</h1>
+  <p class="sub">Type a prompt → get a 3D model for Roblox.</p>
+
+  <label>Prompt</label>
+  <textarea id="prompt" placeholder="e.g. a detailed wooden treasure chest with gold trim">a friendly robot</textarea>
+
+  <label>Mode</label>
+  <div class="seg" id="mode">
+    <button data-mode="ai" class="on">AI mesh (best)</button>
+    <button data-mode="local">Offline preview</button>
+  </div>
+
+  <!-- AI options -->
+  <div id="ai-opts">
+    <label>Provider</label>
+    <select id="provider">
+      <option value="meshy">Meshy</option>
+      <option value="tripo">Tripo</option>
+    </select>
+    <label>API key <span class="hint" id="keyhelp"></span></label>
+    <input id="apiKey" type="password" placeholder="paste your free API key" autocomplete="off" />
+    <div class="row">
+      <div>
+        <label>Style</label>
+        <select id="modelType"><option value="standard">Standard</option><option value="lowpoly">Low-poly</option></select>
+      </div>
+      <div>
+        <label>Max polys</label>
+        <select id="polycount">
+          <option value="10000">10k (light)</option>
+          <option value="20000" selected>20k</option>
+          <option value="30000">30k</option>
+        </select>
+      </div>
+    </div>
+    <label style="display:flex;align-items:center;gap:8px;margin-top:10px;">
+      <input type="checkbox" id="refine" checked style="width:auto;"> Add textures (slower, Meshy)
+    </label>
+    <div class="hint">Real organic meshes. Free-tier keys give monthly credits.</div>
+  </div>
+
+  <!-- Local options -->
+  <div id="local-opts" class="hide">
+    <label>Detail (smoothness): <span id="detailVal">24</span></label>
+    <input id="detail" type="range" min="8" max="48" value="24" step="2" style="width:100%;">
+    <div class="hint">Built from primitives — instant & free, but simpler shapes.</div>
+  </div>
+
+  <button class="go" id="go">Generate</button>
+  <div id="status"></div>
+  <div id="bar"><div></div></div>
+  <div class="downloads" id="downloads"></div>
+
+  <details open>
+    <summary>How to import into Roblox</summary>
+    <ol>
+      <li>Download the <b>.obj</b> (offline) or <b>.fbx</b>/<b>.obj</b> (AI).</li>
+      <li>Studio → <b>Asset Manager → Bulk Import</b> → pick the file.</li>
+      <li>Drag the imported <b>MeshPart</b> into your place.</li>
+      <li>AI meshes can be high-poly — see <code>AI_MODELS.md</code> for optimizing.</li>
+    </ol>
+  </details>
+  <details>
+    <summary>Where do I get a free API key?</summary>
+    <p><b>Meshy:</b> meshy.ai → Settings → API. <b>Tripo:</b> platform.tripo3d.ai → API keys.
+       Your key is stored only in this browser and sent only to your local app.</p>
+  </details>
+</div>
+
+<div id="stage">
+  <div id="canvas-wrap"></div>
+  <div class="badge" id="badge">Drag to orbit · scroll to zoom</div>
+</div>
+
+<script type="importmap">
+{ "imports": {
+  "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+}}
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
+// --- scene ---------------------------------------------------------------
+const wrap = document.getElementById('canvas-wrap');
+const renderer = new THREE.WebGLRenderer({ antialias:true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+wrap.appendChild(renderer.domElement);
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x15171b);
+const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 5000);
+camera.position.set(18, 14, 22);
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+scene.add(new THREE.HemisphereLight(0xffffff, 0x404050, 1.1));
+const key = new THREE.DirectionalLight(0xffffff, 1.6); key.position.set(12, 20, 10); scene.add(key);
+const grid = new THREE.GridHelper(60, 30, 0x3a3f48, 0x2a2e35); scene.add(grid);
+let current = null;
+
+function resize() {
+  const w = wrap.clientWidth, h = wrap.clientHeight;
+  renderer.setSize(w, h); camera.aspect = w/h; camera.updateProjectionMatrix();
+}
+new ResizeObserver(resize).observe(wrap); resize();
+(function loop(){ requestAnimationFrame(loop); controls.update(); renderer.render(scene, camera); })();
+
+function showModel(obj) {
+  if (current) { scene.remove(current); }
+  current = obj;
+  // centre on X/Z, rest on ground, then frame the camera
+  const box = new THREE.Box3().setFromObject(obj);
+  const size = box.getSize(new THREE.Vector3());
+  const center = box.getCenter(new THREE.Vector3());
+  obj.position.set(-center.x, -box.min.y, -center.z);
+  scene.add(obj);
+  const radius = Math.max(size.x, size.y, size.z) || 5;
+  controls.target.set(0, size.y/2, 0);
+  camera.position.set(radius*1.6, radius*1.3, radius*1.8);
+  camera.near = radius/100; camera.far = radius*100; camera.updateProjectionMatrix();
+}
+
+// --- offline primitive preview ------------------------------------------
+function rotMatrix(rx, ry, rz) {
+  const d=Math.PI/180; rx*=d; ry*=d; rz*=d;
+  const cx=Math.cos(rx),sx=Math.sin(rx),cy=Math.cos(ry),sy=Math.sin(ry),cz=Math.cos(rz),sz=Math.sin(rz);
+  const m = new THREE.Matrix4();
+  m.set( cz*cy, cz*sy*sx - sz*cx, cz*sy*cx + sz*sx, 0,
+         sz*cy, sz*sy*sx + cz*cx, sz*sy*cx - cz*sx, 0,
+         -sy,   cy*sx,            cy*cx,            0,
+         0,0,0,1 );
+  return m;
+}
+function wedgeGeometry(sx, sy, sz) {
+  const hx=sx/2, hy=sy/2, hz=sz/2;
+  const v = [ -hx,-hy,-hz,  hx,-hy,-hz, -hx,hy,-hz,  hx,hy,-hz, -hx,-hy,hz,  hx,-hy,hz ];
+  const f = [0,1,3, 0,3,2, 0,4,5, 0,5,1, 2,3,5, 2,5,4, 0,2,4, 1,5,3];
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(v, 3));
+  g.setIndex(f); g.computeVertexNormals(); return g;
+}
+function buildLocal(spec) {
+  const group = new THREE.Group();
+  for (const p of spec.parts) {
+    const [sx,sy,sz] = p.size, seg = p.segments || spec.detail || 24;
+    let g;
+    switch ((p.shape||'box').toLowerCase()) {
+      case 'sphere': case 'ball': g = new THREE.SphereGeometry(0.5, seg, Math.max(4, seg>>1)); g.scale(sx,sy,sz); break;
+      case 'cylinder': g = new THREE.CylinderGeometry(0.5,0.5,sy,seg); g.scale(sx,1,sz); break;
+      case 'cone': g = new THREE.ConeGeometry(0.5,sy,seg); g.scale(sx,1,sz); break;
+      case 'wedge': g = wedgeGeometry(sx,sy,sz); break;
+      default: g = new THREE.BoxGeometry(sx,sy,sz);
+    }
+    const m = rotMatrix(...(p.rotation||[0,0,0]));
+    m.setPosition(...(p.position||[0,0,0]));
+    g.applyMatrix4(m);
+    const isNeon = (p.material||'').toLowerCase()==='neon';
+    const isMetal = (p.material||'').toLowerCase()==='metal';
+    const mat = new THREE.MeshStandardMaterial({
+      color: new THREE.Color(p.color||'#cccccc'),
+      roughness: isMetal?0.35:0.75, metalness: isMetal?0.7:0.05,
+      emissive: isNeon ? new THREE.Color(p.color) : 0x000000,
+      emissiveIntensity: isNeon?0.8:0,
+    });
+    group.add(new THREE.Mesh(g, mat));
+  }
+  return group;
+}
+
+// --- UI plumbing ---------------------------------------------------------
+const $ = id => document.getElementById(id);
+let mode = 'ai';
+const gltf = new GLTFLoader();
+let lastDownloads = [];
+
+$('mode').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  mode = b.dataset.mode;
+  [...$('mode').children].forEach(x => x.classList.toggle('on', x===b));
+  $('ai-opts').classList.toggle('hide', mode!=='ai');
+  $('local-opts').classList.toggle('hide', mode!=='local');
+});
+$('detail').addEventListener('input', e => $('detailVal').textContent = e.target.value);
+$('provider').addEventListener('change', saveKeyUI);
+function saveKeyUI() {
+  localStorage.setItem('pm_provider', $('provider').value);
+  $('keyhelp').textContent = $('provider').value==='meshy' ? '(meshy.ai)' : '(tripo3d.ai)';
+}
+// restore saved key/provider
+$('provider').value = localStorage.getItem('pm_provider') || 'meshy';
+$('apiKey').value = localStorage.getItem('pm_key_'+$('provider').value) || '';
+saveKeyUI();
+$('apiKey').addEventListener('change', () => localStorage.setItem('pm_key_'+$('provider').value, $('apiKey').value));
+
+function setStatus(msg, kind) {
+  const el = $('status'); el.textContent = msg || '';
+  el.style.color = kind==='err' ? '#f08a8a' : kind==='ok' ? '#7fd0a0' : 'var(--muted)';
+}
+function setBar(pct) {
+  const bar = $('bar'); bar.style.display = pct==null ? 'none' : 'block';
+  if (pct!=null) bar.firstElementChild.style.width = Math.max(2,pct)+'%';
+}
+function setDownloads(items) {
+  lastDownloads = items;
+  const box = $('downloads');
+  box.innerHTML = items.length ? '<div style="color:var(--muted);font-size:12px;">Download for Roblox:</div>' : '';
+  for (const it of items) {
+    const a = document.createElement('a');
+    a.textContent = it.label; a.href = it.href;
+    if (it.download) a.download = it.download;
+    box.appendChild(a);
+  }
+  box.style.display = items.length ? 'block' : 'none';
+}
+function blobLink(text, filename, label) {
+  const url = URL.createObjectURL(new Blob([text], {type:'text/plain'}));
+  return { label, href:url, download:filename };
+}
+async function postJSON(path, body) {
+  const r = await fetch(path, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)});
+  const data = await r.json();
+  if (!r.ok) throw new Error(data.error || ('HTTP '+r.status));
+  return data;
+}
+const sleep = ms => new Promise(r=>setTimeout(r,ms));
+
+$('go').addEventListener('click', async () => {
+  const prompt = $('prompt').value.trim();
+  if (!prompt) { setStatus('Enter a prompt first.', 'err'); return; }
+  $('go').disabled = true; setDownloads([]);
+  try {
+    if (mode==='local') await runLocal(prompt);
+    else await runAI(prompt);
+  } catch (e) {
+    setStatus(e.message || String(e), 'err'); setBar(null);
+  } finally {
+    $('go').disabled = false;
+  }
+});
+
+async function runLocal(prompt) {
+  setStatus('Building…'); setBar(null);
+  const d = await postJSON('/api/local', { prompt, detail:+$('detail').value });
+  showModel(buildLocal(d.spec));
+  setStatus(`${d.name}: ${d.triangles} triangles${d.recognised?'':' (placeholder — unknown object)'}`, 'ok');
+  const base = d.name.replace(/[^a-z0-9]+/gi,'_');
+  setDownloads([ blobLink(d.obj, base+'.obj', '⬇ .obj'), blobLink(d.mtl, base+'.mtl', '⬇ .mtl') ]);
+}
+
+async function runAI(prompt) {
+  const provider = $('provider').value;
+  const apiKey = $('apiKey').value.trim();
+  if (!apiKey) { setStatus('Paste your '+provider+' API key (or switch to Offline preview).', 'err'); return; }
+  localStorage.setItem('pm_key_'+provider, apiKey);
+  setBar(2); setStatus('Sending prompt to '+provider+'…');
+  const opts = { provider, apiKey, prompt, modelType:$('modelType').value, polycount:+$('polycount').value };
+  let { taskId } = await postJSON('/api/ai/create', opts);
+
+  let urls = await poll(provider, apiKey, taskId, 'Generating shape');
+  // optional texturing pass (Meshy refine)
+  if (provider==='meshy' && $('refine').checked) {
+    setStatus('Adding textures…'); setBar(5);
+    const r = await postJSON('/api/ai/refine', { apiKey, previewTaskId: taskId });
+    urls = await poll(provider, apiKey, r.taskId, 'Texturing');
+  }
+  if (!urls.glb && !urls.obj && !urls.fbx) throw new Error('No model file returned.');
+  await previewGLB(urls.glb || urls.obj);
+  setStatus('Done — preview ready. Download below.', 'ok'); setBar(null);
+  const dl = [];
+  if (urls.fbx) dl.push({ label:'⬇ .fbx (best for Roblox)', href:proxy(urls.fbx) });
+  if (urls.obj) dl.push({ label:'⬇ .obj', href:proxy(urls.obj) });
+  if (urls.glb) dl.push({ label:'⬇ .glb (convert via Blender)', href:proxy(urls.glb) });
+  setDownloads(dl);
+}
+
+async function poll(provider, apiKey, taskId, label) {
+  for (let i=0;i<200;i++) {
+    const s = await postJSON('/api/ai/status', { provider, apiKey, taskId });
+    if (s.status==='SUCCEEDED') { setBar(100); return s.model_urls || {}; }
+    if (s.status==='FAILED' || s.status==='CANCELED') throw new Error(s.task_error || (provider+' task '+s.status));
+    setBar(Math.max(5, s.progress||5)); setStatus(`${label}… ${s.progress||0}%`);
+    await sleep(3000);
+  }
+  throw new Error('Timed out waiting for '+provider+'.');
+}
+const proxy = url => '/api/fetch?url=' + encodeURIComponent(url);
+
+async function previewGLB(url) {
+  const buf = await (await fetch(proxy(url))).arrayBuffer();
+  await new Promise((res, rej) => gltf.parse(buf, '', g => { showModel(g.scene); res(); }, rej));
+}
+</script>
+</body>
+</html>

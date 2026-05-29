@@ -9,16 +9,36 @@ straight into Roblox. It works in **two stages**:
 2. **JSON → detailed mesh.** The compiler turns that spec into a smooth,
    triangulated **`.obj` + `.mtl`** that you import into Roblox Studio.
 
-No API keys, no internet, no dependencies — **pure Python 3 standard library**.
+Pure Python 3 standard library — **no packages to install**.
 
 ```
 "big red car"  ──►  Big_red_car.json  ──►  Big_red_car.obj (+ .mtl)  ──►  Roblox
    prompt            (editable spec)        detailed mesh                import
 ```
 
+## 🖥️ Run the app (UI with 3D preview)
+
+```bash
+python3 app.py        # opens http://localhost:8000 in your browser
+```
+
+A local web app with a live 3D viewport and **two modes**:
+
+- **AI mesh (best)** — real, organic, *non-boxy* meshes from **Meshy** or
+  **Tripo** using your free API key. Generates, previews the result, and gives
+  you **.fbx / .obj / .glb** downloads ready for Roblox. Your key stays on your
+  machine (it's only proxied through the local server to avoid CORS).
+- **Offline preview** — instant primitive-composite model from the built-in
+  library, no key, no internet. Good for quick props and prototyping.
+
+> **Why two modes?** Truly organic meshes can only come from a generative-3D
+> model running on a server — that's the AI mode (needs a free key). The offline
+> mode is the fast, free, dependency-less fallback. The command-line tool below
+> drives the same offline pipeline.
+
 ---
 
-## Quick start
+## Command line
 
 ```bash
 # Prompt → JSON → OBJ (writes both the spec and the mesh into ./out)
@@ -103,16 +123,24 @@ static props.
 ## Project layout
 
 ```
+app.py                   # local web app (3D preview UI: AI + offline modes)
 make_model.py            # CLI entry point
+webui/index.html         # the app's front-end (Three.js viewport)
 promptmesh/
   geometry.py            # spec -> triangle mesh (primitives, transforms, compiler)
-  exporter.py            # mesh -> .obj / .mtl
+  exporter.py            # mesh -> .obj / .mtl (files or strings)
   library.py             # offline prompt -> spec
+  ai_providers.py        # Meshy / Tripo text-to-3D over the std-lib urllib
 examples/                # hand-authored example specs
+tests/                   # stdlib unittest suite
 MODEL_SCHEMA.md          # JSON schema + copy-paste AI prompt
 AI_MODELS.md             # using Roblox Cube 3D / Meshy / Tripo for AI meshes
 PLUGIN.md                # the original in-Studio, Part-based plugin
 ```
+
+> **Requirements:** Python 3.8+. The AI mode needs internet and a free Meshy or
+> Tripo API key. The 3D preview loads Three.js from a CDN, so the viewport needs
+> internet too; offline *generation* and Roblox *import* don't.
 
 ## Also included: the in-Studio Parts plugin
 
