@@ -1,0 +1,13 @@
+{
+  "name": "Spaceship",
+  "detail": 32,
+  "parts": [
+    { "shape": "cylinder", "size": [3, 12, 3], "position": [0, 6, 0], "color": "#E0E4EA", "material": "Metal", "segments": 32 },
+    { "shape": "cone", "size": [3, 3.5, 3], "position": [0, 13.5, 0], "color": "#C9302C", "material": "Metal", "segments": 32 },
+    { "shape": "sphere", "size": [1.6, 1.6, 1.6], "position": [0, 9, 1.5], "color": "#7FD0F0", "material": "Glass", "segments": 24 },
+    { "shape": "cone", "size": [2, 3, 0.4], "position": [1.8, 2, 0], "rotation": [0, 0, -90], "color": "#C9302C", "material": "Metal", "segments": 4 },
+    { "shape": "cone", "size": [2, 3, 0.4], "position": [-1.8, 2, 0], "rotation": [0, 0, 90], "color": "#C9302C", "material": "Metal", "segments": 4 },
+    { "shape": "cone", "size": [0.4, 3, 2], "position": [0, 2, 1.8], "rotation": [90, 0, 0], "color": "#C9302C", "material": "Metal", "segments": 4 },
+    { "shape": "sphere", "size": [2.4, 2, 2.4], "position": [0, 0.4, 0], "color": "#FFB347", "material": "Neon", "segments": 24 }
+  ]
+}

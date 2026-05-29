@@ -4,6 +4,14 @@
 *.rbxl
 *.rbxlx
 
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# Generated model output
+out/
+
 # Editor / OS
 .DS_Store
 *.swp

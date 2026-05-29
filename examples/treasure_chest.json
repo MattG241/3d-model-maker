@@ -1,0 +1,13 @@
+{
+  "name": "Treasure Chest",
+  "detail": 24,
+  "parts": [
+    { "shape": "box", "size": [6, 3, 4], "position": [0, 1.5, 0], "color": "#8B5A2B", "material": "Wood" },
+    { "shape": "cylinder", "size": [4, 6, 4], "position": [0, 3.4, 0], "rotation": [0, 0, 90], "color": "#8B5A2B", "material": "Wood", "segments": 24 },
+    { "shape": "box", "size": [6.2, 0.4, 4.2], "position": [0, 3.0, 0], "color": "#D4A017", "material": "Metal" },
+    { "shape": "box", "size": [0.5, 1.2, 4.2], "position": [2.0, 3.0, 0], "color": "#D4A017", "material": "Metal" },
+    { "shape": "box", "size": [0.5, 1.2, 4.2], "position": [-2.0, 3.0, 0], "color": "#D4A017", "material": "Metal" },
+    { "shape": "box", "size": [1.0, 1.0, 0.6], "position": [0, 2.6, 2.0], "color": "#FFD54A", "material": "Metal" },
+    { "shape": "sphere", "size": [4, 0.6, 3], "position": [0, 3.1, 0], "color": "#FFE08A", "material": "Neon", "segments": 20 }
+  ]
+}
