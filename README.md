@@ -9,6 +9,11 @@ it, and adds it to the undo history.
 It ships with a library of **140+ objects** across nature, animals, buildings,
 vehicles, furniture, food, weapons, fantasy/sci-fi and toys.
 
+> **Want real, AI-generated meshes (not Parts)?** See
+> **[AI_MODELS.md](AI_MODELS.md)** for the best free workflows — Roblox's own
+> Cube 3D (`/generate` in the Studio Assistant), plus Meshy/Tripo + Blender
+> import for higher-detail meshes.
+
 No API keys. No internet connection. No cost. Everything runs locally in Studio,
 so it's safe to use in any game project.
 
